@@ -1,0 +1,33 @@
+# vim:set ft=dockerfile:
+FROM registryhj/ubuntu:22.04
+
+RUN \
+  apt update; \
+  DEBIAN_FRONTEND=noninteractive\
+  apt upgrade -y; \
+  apt install -y --no-install-recommends \
+    python3.11 python3.11-venv python3.11-dev build-essential pkg-config \
+    fonts-nanum fonts-firacode fontconfig; \
+  apt-get clean; \
+  rm -rf /var/lib/apt/lists/*;
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11;
+
+RUN fc-cache -fv
+
+COPY requirements.txt .
+COPY start.sh .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+WORKDIR /workspace
+
+RUN mkdir -p /workspace/{images, data}
+
+ARG JUPYTER_TOKEN=0000
+ENV JUPYTER_TOKEN=${JUPYTER_TOKEN}
+
+RUN chmod +x /start.sh
+
+EXPOSE 8888
+
+CMD ["/start.sh"]
